@@ -13,6 +13,7 @@ class BullsCows extends React.Component{
     onSubmit=(e)=>{
         e.preventDefault();
         
+        if(!this.state.over){
         const answer = this.state.answer;
         const value  = this.state.value;
         
@@ -22,7 +23,7 @@ class BullsCows extends React.Component{
             return; 
         }
         
-      // hashtable
+      // hashtable to check unique values
         var hs = {};
         for(var i=0; i<value.length; i++){
             let c = value.charAt(i);
@@ -38,26 +39,16 @@ class BullsCows extends React.Component{
             }
         }
         
-        if(this.state.tries.length >=9){
-            this.setState({result:'Sorry, reset the game! Answer is ' + this.state.answer.join('')});
-            return;
-        }
-
-        if(this.state.over){
-            this.setState({result:'Reset the game!'});
-            return;
-
-        }
-        
         //3 ball and strike
         var ball=0;
         var strike=0;
-
+             
         answer.map(a=>{
             let c = a;
             hs['hs'+c]===undefined?
             hs['hs'+c]=1 : hs['hs'+c]--;
         })
+
         //if 0 -> ball++
         for(let [k,v] of Object.entries(hs)){ if(!v) ball++; }
         //strike
@@ -74,20 +65,27 @@ class BullsCows extends React.Component{
                 value:'',
             }});
 
-        if(strike===4){ 
-            this.setState(()=>{
-                return {
-                    result:'Congratulations! Answer is ' + this.state.answer.join(''),
-                    over:true,
-                }
-            });
-
-        }
-        else{
+        if(strike===4){      
+        this.setState(()=>{ 
+            return{
+                result: this.state.answer.join('') + ' is answer. Congratulations! reset game.',
+                over:true,
+        }})}else{
             this.setState({result: `you have ${10 - this.state.tries.length -1} more tries!` });
         }
-       this.input.focus();
+       
+        if(this.state.tries.length>=9){
+            this.setState(()=>{
+                return{
+                    over: true,
+                    result:'Woops! game over. Anser is '+this.state.answer.join('') +' reset to try again.'
+                }
+            });
+        }
 
+        }
+    this.input.focus();
+       return;
     }
 
     onRefInput=(c)=>{
