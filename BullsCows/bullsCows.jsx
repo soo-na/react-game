@@ -1,16 +1,16 @@
 const React = require('react');
-const {useState, useRef} = React;
+const {useState, useRef, memo} = React;
 const UserTry = require('./userTry');
 
-//change to react hooks 
-const BullsCows = ()=>{
+//change to react hooks with memo
+const BullsCows =memo(()=>{
 
     const [result, setResult] = useState('');
     const [value, setValue] = useState('');
     const [answer, setAnswer] = useState(getValue());
     const [tries, setTries] = useState([]);
     const [over, setOver] = useState(false);
-    const inputRef= useRef('reff');
+    const inputRef= useRef('');
 
     const onSubmit=(e)=>{
         e.preventDefault();
@@ -58,7 +58,7 @@ const BullsCows = ()=>{
         t.ball = ball;
         t.strike = strike;
 
-        setTries([...tries, t]);/////
+        setTries((prevTries)=>{return [...prevTries, t]});
         setValue('');
        
 
@@ -93,13 +93,15 @@ const BullsCows = ()=>{
 
     const t = tries.map((t,i)=>{
         return (
-           <div key={'try'+i}>
-             <li><b>{t.value}</b> :  {t.ball} ball(s)  | {t.strike} strike(s)</li>
-           </div>
+           <UserTry key={'try'+i} value={t.value} ball={t.ball} strike ={t.strike}>
+    
+           </UserTry>
+          
         )
     })
-    return(<>
 
+
+    return(<>
 
        <h2>Enter 4 different digits between 0 ~ 9, then click "ok"</h2>
            <form onSubmit={onSubmit}>    
@@ -107,10 +109,14 @@ const BullsCows = ()=>{
                    <button>ok</button>
                   <h3>{result}</h3>
            </form>
-           <div><UserTry value={t}></UserTry> </div>
+           <div>
+               
+               <ol>{t}</ol>
+               
+               </div>
         <button onClick={onReset}>reset</button>
     </>);
-}
+})
 const getValue =()=>{
     var arr = [];
     for(var i =0; arr.length<4 ; i++){
