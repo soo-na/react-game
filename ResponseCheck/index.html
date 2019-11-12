@@ -1,0 +1,27 @@
+<html>
+    <head>
+        <title>Response check </title>
+        <style>
+            #screen {
+               width:500px;
+               height:500px;
+               user-select: none;
+               text-align: center;
+            }
+            #screen.waiting{
+                background-color:aqua;
+            }
+            #screen.ready{
+                background-color:red;
+                color:white;
+            }
+            #screen.now{
+                background-color:greenyellow;
+            }
+        </style></head>
+
+    <body>
+        <div id='root'></div>
+        <script src='/dist/app.js'></script>
+    </body>
+</html>
