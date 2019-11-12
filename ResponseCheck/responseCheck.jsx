@@ -1,83 +1,66 @@
 const  React =  require('react');
+const {useState, useRef} = React;
 
-class ResponseCheck extends React.Component{
+const ResponseCheck =()=>{
    
-    state = {
-        state:'waiting',
-        message:'Click to start',
-        result:[],
+    const [state, setState]=useState('waiting');
+    const [message, setMessage] = useState('Click to start');
+    const [result, setResult] = useState([]);
+    const timeout = useRef(null);
+    const startTime = useRef(0);
+    const endTime = useRef(0);
 
+    const onReset=()=>{
+        setResult([]);
     }
-
-    onReset=()=>{
-        this.setState({
-            result:[],
-        });
-    }
-    renderAverage=()=>{
-        const result= this.state.result;
+    const renderAverage=()=>{
         return(
             result.length===0?
             null : 
             <div>
                average: {result.reduce((a,c)=>a+c)/result.length}ms
-               <button onClick={this.onReset}>reset</button>
+               <button onClick={onReset}>reset</button>
             </div>)
-
     }
 
-    timeout;
-    startTime;
-    endTime;
-
-    onClickScreen=(e)=>{
-        const {state, message, result} = this.state;
+   
+    const onClickScreen=(e)=>{
 
         if(state==='waiting'){
-           
-            this.setState({
-                state:'ready',
-                message:'click when green'
-            });
+            setState('ready');
+            setMessage('click when green')
 
-           this.setTimeout = setTimeout(()=>{
-                this.setState({
-                    state:'now',
-                    message:'click!'
-                });
-                this.startTime = new Date();//
+
+           timeout.current = setTimeout(()=>{
+                    setState('now');
+                    setMessage('click!');
+                startTime.current = new Date();//
 
             }, Math.floor(Math.random() *1000)+2000);
 
         }else if(state==='ready'){//click too fast
-            clearTimeout(this.timeout);
-            this.setState({ 
-            state:'waiting',
-            message:'Too fast, click when green',
-            });
+            clearTimeout(timeout.current);
+            setState('waiting');
+            setMessage('Too fast, click when green');
+        
 
         }else if(state ==='now'){//check response speed
-            this.endTime= new Date();
-            this.setState((prevState)=>{
-                return{
-                    state:'waiting',
-                    message:'Click to start',
-                    result: [...prevState.result, this.endTime - this.startTime], 
-                }
-            })
-                
+            endTime.current= new Date();
             
+            setState('waiting');
+            setMessage('Click to start');
+            setResult((prevResult)=>{return [...prevResult, endTime.current - startTime.current]})
         }
     }
     
 
-    render(){
-        return(<> 
-        <div id='screen' className={this.state.state} onClick={this.onClickScreen}>
-        <div>{this.state.message}</div></div>
-        {this.renderAverage()} 
+    
+     return(<> 
+        <div id='screen' className={state} onClick={onClickScreen}>
+        <div>{message}</div></div>
+        {renderAverage()} 
         </>);
-    }
+    
 }
 
 module.exports = ResponseCheck;
