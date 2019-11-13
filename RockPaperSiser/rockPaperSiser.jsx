@@ -1,5 +1,5 @@
 const  React =  require('react');
-const {PureComponent}= React;
+const {useState, useRef, useEffect, memo}= React;
 
 const rpsCoords ={
     rock:0,
@@ -11,93 +11,84 @@ const scores={
     paper:-1,
     rock:0,
 }
+ 
 const computerChoice=(imgCoord)=>{
-        return Object.entries(rpsCoords).find((rpsCoord)=>
-        rpsCoord[1] ===imgCoord)[0];
+    return Object.entries(rpsCoords).find((rpsCoord)=>rpsCoord[1] ===imgCoord)[0];
 }
 
-class RPS extends PureComponent{
-    state={
-        result:'',
-        imgCoord:0,
-        score:0,
-    }
+const RPS=memo(()=>{
 
-    interval;
-    changeHand=()=>{
-        const {imgCoord} = this.state;
+    const [result, setResult]= useState('');
+    const [imgCoord, setImgCoord]=useState(rpsCoords.rock);
+    const [score, setScore]= useState(scores.rock);
+    const interval = useRef(null);
+
+    const changeHand=()=>{
+        
         if(imgCoord === rpsCoords.siser){
-
-            this.setState({imgCoord:rpsCoords.rock});
+            //console.log('rpsCoords.siser');
+            setImgCoord(rpsCoords.rock);
 
         }else if(imgCoord === rpsCoords.paper){
-            this.setState({imgCoord:rpsCoords.siser});
+            //console.log('rpsCoords.paper');
+            setImgCoord(rpsCoords.siser);
         }
         else if(imgCoord=== rpsCoords.rock){
-
-            this.setState({imgCoord:rpsCoords.paper});
+            //console.log('rpsCoords.rock');
+            setImgCoord(rpsCoords.paper);
         }
     }
-    componentDidMount(){//call setInterval asyn request only when it render first
-        this.interval = setInterval(this.changeHand ,50);
-    }
 
-    componentWillUnmount(){
-        clearInterval(this.interval);
 
-    }
+    useEffect(()=>{
+        //console.log('useEffet start');
+        interval.current = setInterval(changeHand, 50);// componentDidMount 
+        return ()=>{
+            //console.log('finish');
+            clearInterval(interval.current); //return works like componentWilUnmount
+        } 
+    }, [imgCoord]); 
 
-    onClickBtn=(choice)=>{
+//    const componentDidMount(){//call setInterval asyn request only when it render first
+//         this.interval = setInterval(this.changeHand ,50);
+//     }
+//    const componentWillUnmount(){
+//         clearInterval(this.interval);
+//     }
 
-        clearInterval(this.interval);
-        const  {imgCoord} =this.state;
+   const onClickBtn=(choice)=>{
 
-        //siser:1, paper:-1, rock:0
-        // lose: siser-rock//1, paper-siser//-2, rock-paper//1
-        // win: siser-paper//2, paper-rock//-1, rock-siser//-1
+        clearInterval(interval.current);
+
         const myScore = scores[choice];
         const computerScore = scores[computerChoice(imgCoord)];
         const diff = myScore - computerScore;
 
         if(diff===0){
-            this.setState({
-                result:'tied!'
-            })
+            setResult('tied!');
         }else if([-1,2].includes(diff)){
-                this.setState((prevState)=>{return{
-                    result:'you win!',
-                    score: prevState.score +1,
-                } });
-
+            setResult('you win!');
+            setScore((prevScore)=> prevScore+1)
         }else{
-            this.setState((prevState)=>{return{
-                result:'you lose!',
-                score: prevState.score -1,
-            } });
-
+            setResult('you lose!');
+            setScore((prevScore)=> prevScore-1)
         }
-
-         setTimeout(()=>{ this.interval = setInterval(this.changeHand, 50)}, 1000);
-
+        
+         setTimeout(()=>{ interval.current = setInterval(changeHand, 50)}, 1000);
     }
-    render(){
-
-        const {result, imgCoord, score } =this.state;
-
-        return(<>
-        <div id='computer' style={{background:`url(https://en.pimg.jp/023/182/267/1/23182267.jpg) ${imgCoord} 0px`}}>
-        </div>
-
+   
+        return(<>   
+        {//console.log('return'
+        }
+        <div id='computer' style={{background:`url(https://en.pimg.jp/023/182/267/1/23182267.jpg) ${imgCoord} 0px`}}></div>
         <div>
-            <button id='rock' className='rpsBtn' onClick={()=>this.onClickBtn('rock')}> rock</button>
-            <button id='siser' className='rpsBtn' onClick={()=>this.onClickBtn('siser')}> siser</button>
-            <button id='paper' className='rpsBtn' onClick={()=>this.onClickBtn('paper')}> paper</button>
+            <button id='rock' className='rpsBtn' onClick={()=> onClickBtn('rock')}> rock</button>
+            <button id='siser' className='rpsBtn' onClick={()=> onClickBtn('siser')}> siser</button>
+            <button id='paper' className='rpsBtn' onClick={()=> onClickBtn('paper')}> paper</button>
         </div>
            <div>{result}</div> 
            <div>score: {score}</div>
           </>)
-    }
-}
-
+})
 module.exports = RPS;
 
